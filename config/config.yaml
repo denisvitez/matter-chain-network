@@ -1,0 +1,14 @@
+NodeOUs:
+  Enable: true
+  ClientOUIdentifier:
+    Certificate: cacerts/ca-prod-matter-chain-com-7054-ca-prod.pem
+    OrganizationalUnitIdentifier: client
+  PeerOUIdentifier:
+    Certificate: cacerts/ca-prod-matter-chain-com-7054-ca-prod.pem
+    OrganizationalUnitIdentifier: peer
+  AdminOUIdentifier:
+    Certificate: cacerts/ca-prod-matter-chain-com-7054-ca-prod.pem
+    OrganizationalUnitIdentifier: admin
+  OrdererOUIdentifier:
+    Certificate: cacerts/ca-prod-matter-chain-com-7054-ca-prod.pem
+    OrganizationalUnitIdentifier: orderer

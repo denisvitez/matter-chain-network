@@ -1,0 +1,136 @@
+Organizations:
+  - &OrdererOrg
+    Name: OrdererMSP
+    ID: OrdererMSP
+    MSPDir: ./organizations/ordererOrganizations/matter-chain.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+
+  - &ProdOrg
+    Name: ProdMSP
+    ID: ProdMSP
+    MSPDir: ./organizations/peerOrganizations/prod.matter-chain.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('ProdMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('ProdMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('ProdMSP.admin')"
+    AnchorPeers:
+      - Host: peer1.prod.matter-chain.com
+        Port: 7051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  EtcdRaft:
+    Consenters:
+      - Host: orderer1.matter-chain.com
+        Port: 7050
+        ClientTLSCert: ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer1.matter-chain.com/tls/server.crt
+        ServerTLSCert: ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer1.matter-chain.com/tls/server.crt
+      - Host: orderer2.matter-chain.com
+        Port: 7050
+        ClientTLSCert: ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer2.matter-chain.com/tls/server.crt
+        ServerTLSCert: ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer2.matter-chain.com/tls/server.crt
+      - Host: orderer3.matter-chain.com
+        Port: 7050
+        ClientTLSCert: ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer3.matter-chain.com/tls/server.crt
+        ServerTLSCert: ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer3.matter-chain.com/tls/server.crt
+  Addresses:
+    - orderer1.matter-chain.com:7050
+    - orderer2.matter-chain.com:7050
+    - orderer3.matter-chain.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *ProdOrg
+
+  ProdChannel:
+    <<: *ChannelDefaults
+    Consortium: SampleConsortium
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *ProdOrg

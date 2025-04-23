@@ -1,0 +1,22 @@
+[ req ]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+x509_extensions    = v3_req
+prompt             = no
+
+[ req_distinguished_name ]
+CN = ca.prod.matter-chain.com
+O = MatterChain CA
+OU = MatterChain
+C = SI
+L = Postojna
+
+[ v3_ca ]
+subjectAltName = @alt_names
+keyUsage = critical, digitalSignature, keyEncipherment, keyCertSign, cRLSign
+extendedKeyUsage = serverAuth, clientAuth
+basicConstraints = critical, CA:true
+
+[ alt_names ]
+DNS.1 = ca.prod.matter-chain.com
+IP.1 = 172.17.0.1

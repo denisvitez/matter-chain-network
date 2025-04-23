@@ -1,0 +1,66 @@
+services:
+  orderer1.matter-chain.com:
+    container_name: orderer1.matter-chain.com
+    image: hyperledger/fabric-orderer:2.5
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_ROOTCAS=/var/hyperledger/orderer/tls/ca.crt
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=/var/hyperledger/orderer/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - ./system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer1.matter-chain.com/msp:/var/hyperledger/orderer/msp
+      - ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer1.matter-chain.com/tls:/var/hyperledger/orderer/tls
+    restart: unless-stopped
+    ports:
+      - "7050:7050"
+    networks:
+      - fabric-net
+
+  peer1.prod.matter-chain.com:
+    container_name: peer1.prod.matter-chain.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer1.prod.matter-chain.com
+      - CORE_PEER_ADDRESS=peer1.prod.matter-chain.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer1.prod.matter-chain.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.prod.matter-chain.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.prod.matter-chain.com:7051
+      - CORE_PEER_LOCALMSPID=ProdMSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/peer/admin-msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/var/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/var/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/var/hyperledger/certs/ca.crt
+    volumes:
+      - ./organizations/peerOrganizations/prod.matter-chain.com/peers/peer1.prod.matter-chain.com/msp:/var/hyperledger/peer/msp
+      - ./organizations/peerOrganizations/prod.matter-chain.com/peers/peer1.prod.matter-chain.com/tls:/var/hyperledger/peer/tls
+      - ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer1.matter-chain.com/msp:/var/hyperledger/orderer/msp
+      - ./organizations/ordererOrganizations/matter-chain.com/orderers/orderer1.matter-chain.com/tls:/var/hyperledger/orderer/tls
+      - ./channel-artifacts:/var/hyperledger/channel-artifacts
+      - ./certs/ca-cert.pem:/var/hyperledger/certs/ca.crt
+      - ./organizations/peerOrganizations/prod.matter-chain.com/users/Admin@prod.matter-chain.com/msp:/var/hyperledger/peer/admin-msp
+    restart: unless-stopped
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - "7051:7051"
+      - "7052:7052"
+    networks:
+      - fabric-net
+
+networks:
+  fabric-net:
